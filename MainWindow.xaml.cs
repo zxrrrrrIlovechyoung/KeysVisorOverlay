@@ -20,6 +20,7 @@ public partial class MainWindow : Window
     private readonly NativeInputHook inputHook = new();
     private readonly DispatcherTimer renderTimer;
     private readonly Dictionary<int, TileView> tiles = new();
+    private CustomizeInputsWindow? customizeWindow;
 
     public MainWindow()
     {
@@ -27,9 +28,9 @@ public partial class MainWindow : Window
 
         BuildTiles();
 
-        inputHook.KeyDown += tracker.HandleKeyDown;
+        inputHook.KeyDown += OnGlobalKeyDown;
         inputHook.KeyUp += tracker.HandleKeyUp;
-        inputHook.MouseDown += tracker.HandleMouseDown;
+        inputHook.MouseDown += OnGlobalMouseDown;
         inputHook.MouseUp += tracker.HandleMouseUp;
         tracker.CommandRequested += OnCommandRequested;
 
@@ -46,11 +47,9 @@ public partial class MainWindow : Window
         {
             inputHook.Start();
             renderTimer.Start();
-            HookStatusText.Text = "Live";
         }
         catch (Exception ex)
         {
-            HookStatusText.Text = "Input failed";
             MessageBox.Show(
                 $"KeysVisorOverlay could not start input capture.\n\n{ex.Message}",
                 "KeysVisorOverlay",
@@ -66,6 +65,26 @@ public partial class MainWindow : Window
         inputHook.Dispose();
     }
 
+    private void OnGlobalKeyDown(int code)
+    {
+        if (customizeWindow?.TryCaptureInput(code) == true)
+        {
+            return;
+        }
+
+        tracker.HandleKeyDown(code);
+    }
+
+    private void OnGlobalMouseDown(int code)
+    {
+        if (customizeWindow?.TryCaptureInput(code) == true)
+        {
+            return;
+        }
+
+        tracker.HandleMouseDown(code);
+    }
+
     private void DragSurface_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ButtonState == MouseButtonState.Pressed)
@@ -77,6 +96,32 @@ public partial class MainWindow : Window
     private void Reset_Click(object sender, RoutedEventArgs e)
     {
         tracker.Reset();
+    }
+
+    private void Customize_Click(object sender, RoutedEventArgs e)
+    {
+        if (customizeWindow != null)
+        {
+            customizeWindow.Activate();
+            return;
+        }
+
+        CustomizeInputsWindow window = new(tracker.WatchedInputs)
+        {
+            Owner = this
+        };
+
+        customizeWindow = window;
+        window.Closed += (_, _) => customizeWindow = null;
+        bool? result = window.ShowDialog();
+
+        if (result == true)
+        {
+            IReadOnlyList<WatchedInput> inputs = window.SelectedInputs;
+            SettingsStore.SaveInputs(inputs);
+            tracker.UpdateWatchedInputs(inputs);
+            BuildTiles();
+        }
     }
 
     private void ToggleVisibility_Click(object sender, RoutedEventArgs e)
@@ -115,7 +160,13 @@ public partial class MainWindow : Window
 
     private void BuildTiles()
     {
-        foreach (WatchedInput input in tracker.WatchedInputs)
+        IReadOnlyList<WatchedInput> watchedInputs = tracker.WatchedInputs;
+
+        tiles.Clear();
+        TilePanel.Children.Clear();
+        ResizeForTiles(watchedInputs.Count);
+
+        foreach (WatchedInput input in watchedInputs)
         {
             Border shell = new()
             {
@@ -160,6 +211,17 @@ public partial class MainWindow : Window
             TilePanel.Children.Add(shell);
             tiles[input.Code] = new TileView(shell, label, count);
         }
+    }
+
+    private void ResizeForTiles(int inputCount)
+    {
+        int columns = Math.Clamp(inputCount, 1, 6);
+        int rows = (int)Math.Ceiling(inputCount / (double)columns);
+
+        TilePanel.Columns = columns;
+        TilePanel.Rows = Math.Max(1, rows);
+        Width = Math.Max(430, 180 + columns * 76);
+        Height = 158 + (Math.Max(1, rows) - 1) * 42;
     }
 
     private void RenderSnapshot(InputSnapshot snapshot)

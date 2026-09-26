@@ -15,6 +15,10 @@ public static class InputCodes
     public const int VkLeftShift = 0xA0;
     public const int VkRightShift = 0xA1;
     public const int VkH = 0x48;
+    public const int VkD = 0x44;
+    public const int VkF = 0x46;
+    public const int VkJ = 0x4A;
+    public const int VkK = 0x4B;
     public const int VkQ = 0x51;
     public const int VkR = 0x52;
     public const int VkSpace = 0x20;
@@ -30,9 +34,32 @@ public static class InputCodes
             MouseMiddle => "M3",
             MouseX1 => "M4",
             MouseX2 => "M5",
+            0x08 => "BACK",
+            0x09 => "TAB",
+            0x0D => "ENTER",
+            0x10 => "SHIFT",
+            0x11 => "CTRL",
+            0x12 => "ALT",
+            0x14 => "CAPS",
+            0x1B => "ESC",
             VkSpace => "SPACE",
-            VkZ => "Z",
-            VkX => "X",
+            0x21 => "PGUP",
+            0x22 => "PGDN",
+            0x23 => "END",
+            0x24 => "HOME",
+            0x25 => "LEFT",
+            0x26 => "UP",
+            0x27 => "RIGHT",
+            0x28 => "DOWN",
+            0x2D => "INS",
+            0x2E => "DEL",
+            >= 0x60 and <= 0x69 => $"NUM{code - 0x60}",
+            0x6A => "NUM*",
+            0x6B => "NUM+",
+            0x6D => "NUM-",
+            0x6E => "NUM.",
+            0x6F => "NUM/",
+            >= 0x70 and <= 0x87 => $"F{code - 0x6F}",
             _ when code >= 'A' && code <= 'Z' => ((char)code).ToString(),
             _ when code >= '0' && code <= '9' => ((char)code).ToString(),
             _ => $"VK {code}"

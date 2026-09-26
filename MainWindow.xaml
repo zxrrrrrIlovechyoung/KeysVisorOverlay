@@ -16,6 +16,8 @@
         Closed="Window_Closed">
     <Window.ContextMenu>
         <ContextMenu>
+            <MenuItem Header="Customize keys" Click="Customize_Click" />
+            <Separator />
             <MenuItem Header="Reset" Click="Reset_Click" />
             <MenuItem Header="Hide / Show" Click="ToggleVisibility_Click" />
             <Separator />
@@ -49,12 +51,6 @@
                            Foreground="#FFF6F7FB"
                            FontSize="15"
                            FontWeight="SemiBold"
-                           VerticalAlignment="Center" />
-                <TextBlock x:Name="HookStatusText"
-                           Text="Starting"
-                           Foreground="#FF7DE2D1"
-                           FontSize="11"
-                           HorizontalAlignment="Right"
                            VerticalAlignment="Center" />
             </Grid>
 
@@ -119,7 +115,7 @@
             <UniformGrid x:Name="TilePanel"
                          Grid.Row="2"
                          Rows="1"
-                         Columns="5" />
+                         Columns="4" />
         </Grid>
     </Border>
 </Window>

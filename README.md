@@ -15,8 +15,9 @@ This is an early MVP.
 - Transparent always-on-top overlay.
 - Native global keyboard and mouse capture.
 - Current KPS, max KPS, average KPS, and total input count.
-- Watched tiles for `Z`, `X`, `M1`, `M2`, and `SPACE`.
-- Right-click menu for reset, hide/show, and exit.
+- Default watched keys for osu!mania: `D`, `F`, `J`, and `K`.
+- Customizable watched inputs, including keyboard keys and mouse buttons.
+- Right-click menu for customization, reset, hide/show, and exit.
 - Global shortcuts:
   - `Ctrl + Shift + H`: hide or show the overlay.
   - `Ctrl + Shift + R`: reset counters.

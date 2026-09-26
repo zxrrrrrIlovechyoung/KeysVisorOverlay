@@ -9,20 +9,23 @@ public sealed class InputTracker
     private readonly HashSet<int> downInputs = new();
     private readonly Queue<long> recentPresses = new();
     private readonly long oneSecondTicks = Stopwatch.Frequency;
+    private List<WatchedInput> watchedInputs = SettingsStore.LoadInputs().ToList();
     private long totalPresses;
     private long? firstPressTick;
     private int maxKps;
 
     public event Action<OverlayCommand>? CommandRequested;
 
-    public IReadOnlyList<WatchedInput> WatchedInputs { get; } =
-    [
-        new(InputCodes.VkZ, "Z"),
-        new(InputCodes.VkX, "X"),
-        new(InputCodes.MouseLeft, "M1"),
-        new(InputCodes.MouseRight, "M2"),
-        new(InputCodes.VkSpace, "SPACE")
-    ];
+    public IReadOnlyList<WatchedInput> WatchedInputs
+    {
+        get
+        {
+            lock (gate)
+            {
+                return watchedInputs.ToArray();
+            }
+        }
+    }
 
     public void HandleKeyDown(int code)
     {
@@ -61,7 +64,7 @@ public sealed class InputTracker
                 average = totalPresses / elapsedSeconds;
             }
 
-            InputTileSnapshot[] tiles = WatchedInputs
+            InputTileSnapshot[] tiles = watchedInputs
                 .Select(input => new InputTileSnapshot(
                     input.Code,
                     input.Label,
@@ -73,15 +76,20 @@ public sealed class InputTracker
         }
     }
 
+    public void UpdateWatchedInputs(IEnumerable<WatchedInput> inputs)
+    {
+        lock (gate)
+        {
+            watchedInputs = SettingsStore.Normalize(inputs).ToList();
+            ResetUnlocked();
+        }
+    }
+
     public void Reset()
     {
         lock (gate)
         {
-            counts.Clear();
-            recentPresses.Clear();
-            totalPresses = 0;
-            firstPressTick = null;
-            maxKps = 0;
+            ResetUnlocked();
         }
     }
 
@@ -94,7 +102,11 @@ public sealed class InputTracker
                 return false;
             }
 
-            RegisterPress(code, Stopwatch.GetTimestamp());
+            if (watchedInputs.Any(input => input.Code == code))
+            {
+                RegisterPress(code, Stopwatch.GetTimestamp());
+            }
+
             return true;
         }
     }
@@ -105,6 +117,15 @@ public sealed class InputTracker
         {
             downInputs.Remove(code);
         }
+    }
+
+    private void ResetUnlocked()
+    {
+        counts.Clear();
+        recentPresses.Clear();
+        totalPresses = 0;
+        firstPressTick = null;
+        maxKps = 0;
     }
 
     private void RegisterPress(int code, long now)
