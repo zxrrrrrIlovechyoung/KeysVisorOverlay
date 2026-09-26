@@ -7,14 +7,22 @@ public sealed class InputTracker
     private readonly object gate = new();
     private readonly Dictionary<int, long> counts = new();
     private readonly HashSet<int> downInputs = new();
+    private readonly Dictionary<int, ActivePress> activePresses = new();
+    private readonly Queue<InputVisualEvent> visualEvents = new();
     private readonly Queue<long> recentPresses = new();
     private readonly long oneSecondTicks = Stopwatch.Frequency;
-    private List<WatchedInput> watchedInputs = SettingsStore.LoadInputs().ToList();
+    private List<WatchedInput> watchedInputs;
     private long totalPresses;
     private long? firstPressTick;
     private int maxKps;
+    private long nextVisualId;
 
     public event Action<OverlayCommand>? CommandRequested;
+
+    public InputTracker(IEnumerable<WatchedInput>? inputs = null)
+    {
+        watchedInputs = SettingsStore.Normalize(inputs ?? SettingsStore.DefaultInputs).ToList();
+    }
 
     public IReadOnlyList<WatchedInput> WatchedInputs
     {
@@ -48,6 +56,21 @@ public sealed class InputTracker
     public void HandleMouseUp(int code)
     {
         HandleUp(code);
+    }
+
+    public IReadOnlyList<InputVisualEvent> DrainVisualEvents()
+    {
+        lock (gate)
+        {
+            if (visualEvents.Count == 0)
+            {
+                return [];
+            }
+
+            InputVisualEvent[] events = visualEvents.ToArray();
+            visualEvents.Clear();
+            return events;
+        }
     }
 
     public InputSnapshot GetSnapshot()
@@ -102,9 +125,20 @@ public sealed class InputTracker
                 return false;
             }
 
-            if (watchedInputs.Any(input => input.Code == code))
+            WatchedInput? watchedInput = watchedInputs.FirstOrDefault(input => input.Code == code);
+            if (watchedInput != null)
             {
-                RegisterPress(code, Stopwatch.GetTimestamp());
+                long now = Stopwatch.GetTimestamp();
+                long id = ++nextVisualId;
+                RegisterPress(code, now);
+                activePresses[code] = new ActivePress(id, watchedInput.Label, now);
+                visualEvents.Enqueue(new InputVisualEvent(
+                    InputVisualEventType.Started,
+                    id,
+                    code,
+                    watchedInput.Label,
+                    now,
+                    now));
             }
 
             return true;
@@ -115,17 +149,34 @@ public sealed class InputTracker
     {
         lock (gate)
         {
-            downInputs.Remove(code);
+            if (!downInputs.Remove(code))
+            {
+                return;
+            }
+
+            if (activePresses.Remove(code, out ActivePress? press))
+            {
+                long now = Stopwatch.GetTimestamp();
+                visualEvents.Enqueue(new InputVisualEvent(
+                    InputVisualEventType.Ended,
+                    press.Id,
+                    code,
+                    press.Label,
+                    press.StartedAt,
+                    now));
+            }
         }
     }
 
     private void ResetUnlocked()
     {
         counts.Clear();
+        activePresses.Clear();
         recentPresses.Clear();
         totalPresses = 0;
         firstPressTick = null;
         maxKps = 0;
+        visualEvents.Enqueue(new InputVisualEvent(InputVisualEventType.Reset, 0, 0, string.Empty, 0, 0));
     }
 
     private void RegisterPress(int code, long now)
@@ -176,4 +227,6 @@ public sealed class InputTracker
                 break;
         }
     }
+
+    private sealed record ActivePress(long Id, string Label, long StartedAt);
 }

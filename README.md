@@ -17,6 +17,9 @@ This is an early MVP.
 - Current KPS, max KPS, average KPS, and total input count.
 - Default watched keys for osu!mania: `D`, `F`, `J`, and `K`.
 - Customizable watched inputs, including keyboard keys and mouse buttons.
+- Movable stats section: place KPS, max, average, and total above or below the keys.
+- Optional key trails that rise from each pressed key.
+- Adjustable overlay size.
 - Right-click menu for customization, reset, hide/show, and exit.
 - Global shortcuts:
   - `Ctrl + Shift + H`: hide or show the overlay.

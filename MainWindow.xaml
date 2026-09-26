@@ -4,9 +4,9 @@
         Title="KeysVisorOverlay"
         Width="430"
         Height="158"
-        MinWidth="360"
-        MinHeight="136"
-        ResizeMode="NoResize"
+        MinWidth="250"
+        MinHeight="100"
+        ResizeMode="CanResizeWithGrip"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -16,7 +16,7 @@
         Closed="Window_Closed">
     <Window.ContextMenu>
         <ContextMenu>
-            <MenuItem Header="Customize keys" Click="Customize_Click" />
+            <MenuItem Header="Customize overlay" Click="Customize_Click" />
             <Separator />
             <MenuItem Header="Reset" Click="Reset_Click" />
             <MenuItem Header="Hide / Show" Click="ToggleVisibility_Click" />
@@ -39,10 +39,13 @@
                               Color="#000000" />
         </Border.Effect>
 
-        <Grid>
+        <Grid x:Name="OverlayGrid"
+              ClipToBounds="False">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition x:Name="TrailRow" Height="*" MinHeight="128" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
@@ -54,7 +57,9 @@
                            VerticalAlignment="Center" />
             </Grid>
 
-            <Grid Grid.Row="1" Margin="0,10,0,9">
+            <Grid x:Name="StatsPanel"
+                  Grid.Row="1"
+                  Margin="0,10,0,9">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.05*" />
                     <ColumnDefinition Width="1*" />
@@ -112,10 +117,24 @@
                 </StackPanel>
             </Grid>
 
-            <UniformGrid x:Name="TilePanel"
-                         Grid.Row="2"
-                         Rows="1"
-                         Columns="4" />
+            <StackPanel x:Name="TilePanel"
+                        Grid.Row="3"
+                        Orientation="Horizontal" />
+
+            <Border x:Name="TrailViewport"
+                    Grid.Row="2"
+                    MinHeight="128"
+                    Background="Transparent"
+                    ClipToBounds="True"
+                    IsHitTestVisible="False">
+                <Canvas x:Name="TrailCanvas"
+                        MinHeight="128"
+                        Width="{Binding ActualWidth, ElementName=TrailViewport}"
+                        ClipToBounds="True"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        IsHitTestVisible="False" />
+            </Border>
         </Grid>
     </Border>
 </Window>
