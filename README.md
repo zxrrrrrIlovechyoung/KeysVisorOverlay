@@ -10,17 +10,12 @@ where seeing your input rhythm matters.
 
 ## Demo
 
-### Overlay
+GitHub does not reliably render repository video files as embedded players inside
+README files, so the demos are linked directly:
 
-<video src="assets/demo-overlay.mp4" controls width="720"></video>
-
-### Customization
-
-<video src="assets/demo-customization.mp4" controls width="720"></video>
-
-### Key Trails
-
-<video src="assets/demo-trails.mp4" controls width="720"></video>
+- [Overlay demo](assets/demo-overlay.mp4)
+- [Customization demo](assets/demo-customization.mp4)
+- [Key trails demo](assets/demo-trails.mp4)
 
 ## A Small Goodbye To osu!mania
 
