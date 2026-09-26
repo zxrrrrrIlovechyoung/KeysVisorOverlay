@@ -12,17 +12,15 @@ where seeing your input rhythm matters.
 
 Click each preview to open the full MP4 demo.
 
-### Overlay
+### Overlay And Key Trails
 
-[![Overlay demo](assets/demo-overlay.gif)](assets/demo-overlay.mp4)
+| Overlay | Key Trails |
+| --- | --- |
+| [<img src="assets/demo-overlay.gif" alt="Overlay demo" width="260">](assets/demo-overlay.mp4) | [<img src="assets/demo-trails.gif" alt="Key trails demo" width="520">](assets/demo-trails.mp4) |
 
 ### Customization
 
-[![Customization demo](assets/demo-customization.gif)](assets/demo-customization.mp4)
-
-### Key Trails
-
-[![Key trails demo](assets/demo-trails.gif)](assets/demo-trails.mp4)
+[<img src="assets/demo-customization.gif" alt="Customization demo" width="720">](assets/demo-customization.mp4)
 
 ## A Small Goodbye To osu!mania
 
